@@ -109,6 +109,7 @@
     if (moved >= 6) { held = false; return; }          /* это было вращение рукой */
     const r = box.getBoundingClientRect();
     ray.setFromCamera(new T.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), cam);
+    ring.updateMatrixWorld(true);
     const hit = ray.intersectObjects(ring.children, false)[0];
     if (!hit) return;
     const i = ring.children.indexOf(hit.object);
