@@ -58,15 +58,34 @@
   }
 
   let dirty = true, visible = false, last = 0, vel = 0, drag = false, lx = 0, moved = 0;
+  let held = false, tween = null, resumeT = null;
+  const ray = new T.Raycaster();
+  function hold() { held = true; clearTimeout(resumeT); }
+  function release(ms) { clearTimeout(resumeT); resumeT = setTimeout(() => { held = false; dirty = true; }, ms); }
+  /* повернуть кольцо так, чтобы фото i встало прямо к зрителю (кратчайшим путём) */
+  function faceTo(i, done) {
+    const TAU = Math.PI * 2, a = (i / N) * TAU;
+    let target = -a, d = (target - ring.rotation.y) % TAU;
+    if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU;
+    tween = { from: ring.rotation.y, to: ring.rotation.y + d, t0: performance.now(), dur: reduce ? 1 : 480, done };
+    vel = 0; dirty = true;
+  }
   const speed = 0.35; // рад/с
   function frame(t) {
     requestAnimationFrame(frame);
+    if (tween) {
+      const k = Math.min(1, (performance.now() - tween.t0) / tween.dur), e = 1 - Math.pow(1 - k, 3);
+      ring.rotation.y = tween.from + (tween.to - tween.from) * e; dirty = true;
+      renderer.render(scene, cam);
+      if (k >= 1) { const f = tween.done; tween = null; f && f(); }
+      return;
+    }
     if (!visible || document.hidden) return;
     if (t - last < 33) return;
     const dt = Math.min((t - last) / 1000, 0.1);
     last = t;
     if (!drag) {
-      if (!reduce) ring.rotation.y += speed * dt + vel;
+      if (!reduce && !held) ring.rotation.y += speed * dt + vel;
       else ring.rotation.y += vel;
       vel *= 0.92;
       if (Math.abs(vel) < 1e-4) vel = 0;
@@ -78,14 +97,27 @@
   new IntersectionObserver((e) => { visible = e[0].isIntersecting; if (visible) dirty = true; }, { threshold: 0.05 }).observe(box);
   new ResizeObserver(resize).observe(box);
 
-  box.addEventListener("pointerdown", (e) => { drag = true; lx = e.clientX; moved = 0; box.classList.add("is-drag"); box.setPointerCapture(e.pointerId); });
+  box.addEventListener("pointerdown", (e) => { clearTimeout(resumeT); if (!held) { /* обычный захват */ } tween = null; drag = true; lx = e.clientX; moved = 0; box.classList.add("is-drag"); box.setPointerCapture(e.pointerId); });
   box.addEventListener("pointermove", (e) => {
     if (!drag) return;
     const dx = e.clientX - lx; lx = e.clientX; moved += Math.abs(dx);
     ring.rotation.y += dx * 0.008; vel = dx * 0.0015; dirty = true;
   });
   const end = () => { drag = false; box.classList.remove("is-drag"); };
-  box.addEventListener("pointerup", (e) => { end(); if (moved < 6) document.getElementById("catalog").scrollIntoView({ behavior: "smooth" }); });
+  box.addEventListener("pointerup", (e) => {
+    end();
+    if (moved >= 6) { held = false; return; }          /* это было вращение рукой */
+    const r = box.getBoundingClientRect();
+    ray.setFromCamera(new T.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), cam);
+    const hit = ray.intersectObjects(ring.children, false)[0];
+    if (!hit) return;
+    const i = ring.children.indexOf(hit.object);
+    if (i < 0) return;
+    hold();                                             /* кольцо стоит на выбранном фото */
+    faceTo(i, () => { if (window.openPhotos) window.openPhotos(SL, i); });
+    release(9000);                                      /* если ничего не делать, снова поедет через 9 секунд */
+  });
+  document.addEventListener("lb:closed", () => release(2500));
   box.addEventListener("pointercancel", end);
 
   box.classList.add("is-ready");

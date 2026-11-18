@@ -137,18 +137,19 @@
       <img src="${g.src}" alt="${esc(g.alt)}" loading="lazy" width="300" height="400"><span class="lens">${LENS}</span></button></li>`).join("");
 
   const lb = $("lb"), lbImg = $("lbImg"), stage = $("lbStage");
-  let cur = 0;
+  let cur = 0, LIST = G;
   function show(i) {
-    cur = (i + G.length) % G.length;
+    cur = (i + LIST.length) % LIST.length;
     stage.classList.remove("is-zoom");
-    lbImg.src = G[cur].src; lbImg.alt = G[cur].alt;
-    $("lbCap").textContent = G[cur].alt + " (" + (cur + 1) + " из " + G.length + ")";
+    lbImg.src = LIST[cur].src; lbImg.alt = LIST[cur].alt;
+    $("lbCap").textContent = LIST[cur].alt + " (" + (cur + 1) + " из " + LIST.length + ")";
   }
   function open(i) { show(i); lb.hidden = false; document.body.style.overflow = "hidden"; $("lbClose").focus(); }
-  function close() { lb.hidden = true; document.body.style.overflow = ""; }
+  function close() { lb.hidden = true; document.body.style.overflow = ""; document.dispatchEvent(new Event("lb:closed")); }
+  window.openPhotos = (list, i) => { LIST = list; open(i); };
   $("galleryList").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-i]");
-    if (b) open(+b.dataset.i);
+    if (b) { LIST = G; open(+b.dataset.i); }
   });
   $("lbClose").addEventListener("click", close);
   $("lbPrev").addEventListener("click", () => show(cur - 1));

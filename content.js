@@ -31,12 +31,12 @@ window.REVIEWS = [
 
 // Фото в кольце (8 лучших десертов). fx/fy - куда смотрит кадр (0..1)
 window.RING = [
-  { src: "assets/p/11.jpg", fy: 0.45 },
-  { src: "assets/p/12.jpg", fy: 0.4 },
-  { src: "assets/p/13.jpg", fy: 0.5 },
-  { src: "assets/p/14.jpg", fy: 0.55 },
-  { src: "assets/p/05.jpg", fy: 0.5 },
-  { src: "assets/p/16.jpg", fy: 0.55 },
-  { src: "assets/p/10.jpg", fy: 0.5 },
-  { src: "assets/p/07.jpg", fy: 0.4 },
+  { src: "assets/p/11.jpg", alt: "Макароны и шоколадно-ореховый десерт", fy: 0.45 },
+  { src: "assets/p/12.jpg", alt: "Витрина с пирожными", fy: 0.4 },
+  { src: "assets/p/13.jpg", alt: "Пирожные-купола, красные и шоколадные", fy: 0.5 },
+  { src: "assets/p/14.jpg", alt: "Тарт с цитрусом", fy: 0.55 },
+  { src: "assets/p/05.jpg", alt: "Круассаны с миндалём", fy: 0.5 },
+  { src: "assets/p/16.jpg", alt: "Маленький торт в разрезе", fy: 0.55 },
+  { src: "assets/p/10.jpg", alt: "Клубничный пирог в разрезе", fy: 0.5 },
+  { src: "assets/p/07.jpg", alt: "Медовик в разрезе с клубникой", fy: 0.4 },
 ];
